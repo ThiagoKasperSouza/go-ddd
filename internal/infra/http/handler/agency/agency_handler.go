@@ -6,9 +6,12 @@ import (
 	"net/http"
 	"log"
 
-	domainAgency "go-ddd/internal/domain/agency"
 	"go-ddd/internal/dto"
+	"go-ddd/internal/infra/http/middleware"
+	"go-ddd/internal/domain/identity"
+	domainAgency "go-ddd/internal/domain/agency"
 	usecaseAgency "go-ddd/internal/usecase/agency"
+	
 )
 
 type AgencyHandler struct {
@@ -16,21 +19,21 @@ type AgencyHandler struct {
 	getAgencyUseCase    *usecaseAgency.GetAgencyUseCase
 	listAgenciesUseCase *usecaseAgency.ListAgenciesUseCase
 	updatedAgencyUseCase *usecaseAgency.UpdateAgencyUseCase
-	deleteAgencyUseCase *usecaseAgency.deleteAgencyUseCase
+	deleteAgencyUseCase *usecaseAgency.DeleteAgencyUseCase
 }
 
 func NewAgencyHandler(
 	createAgencyUseCase *usecaseAgency.CreateAgencyUseCase, 
 	getAgencyUseCase *usecaseAgency.GetAgencyUseCase, 
 	listAgenciesUseCase *usecaseAgency.ListAgenciesUseCase,
-	updatedAgencyUseCase *usecaseAgency.UpdateAgencyUseCase,
+	updateAgencyUseCase *usecaseAgency.UpdateAgencyUseCase,
 	deleteAgencyUseCase *usecaseAgency.DeleteAgencyUseCase) *AgencyHandler {
 	return &AgencyHandler{
 		createAgencyUseCase: 	createAgencyUseCase,
 		getAgencyUseCase: 		getAgencyUseCase,
 		listAgenciesUseCase:	listAgenciesUseCase,
-		updatedAgencyUseCase: 	updatedAgencyUseCase,
-		deleteAgencyUseCase:	deleteAgencyUseCase
+		updatedAgencyUseCase: 	updateAgencyUseCase,
+		deleteAgencyUseCase:	deleteAgencyUseCase,
 	}
 }
 
@@ -84,6 +87,20 @@ func (h *AgencyHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 
 // Create lida com a requisição HTTP POST /agencies
 func (h *AgencyHandler) Create(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(middleware.UserContextKey).(*middleware.UserClaims)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Comparação limpa e segura usando o Enum:
+	if !user.HasRole(identity.RoleAdmin) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(map[string]string{"error": "forbidden: requires admin role"})
+		return
+	}
+
 	var input dto.CreateAgencyDTO
 
 	// 1. Decodifica o JSON do body da requisição no DTO de entrada
@@ -119,6 +136,20 @@ func (h *AgencyHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // Update lida com PUT /agencies/{id}
 func (h *AgencyHandler) Update(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(middleware.UserContextKey).(*middleware.UserClaims)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Comparação limpa e segura usando o Enum:
+	if !user.HasRole(identity.RoleAdmin) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(map[string]string{"error": "forbidden: requires admin role"})
+		return
+	}
+
 	id := r.PathValue("id")
 	if id == "" {
 		w.Header().Set("Content-Type", "application/json")
@@ -135,7 +166,7 @@ func (h *AgencyHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := h.updateAgencyUseCase.Execute(r.Context(), id, input)
+	output, err := h.updatedAgencyUseCase.Execute(r.Context(), id, input)
 	if err != nil {
 		if errors.Is(err, domainAgency.ErrAgencyNotFound) {
 			w.Header().Set("Content-Type", "application/json")
@@ -157,6 +188,20 @@ func (h *AgencyHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete lida com DELETE /agencies/{id}
 func (h *AgencyHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(middleware.UserContextKey).(*middleware.UserClaims)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Comparação limpa e segura usando o Enum:
+	if !user.HasRole(identity.RoleAdmin) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(map[string]string{"error": "forbidden: requires admin role"})
+		return
+	}
+	
 	id := r.PathValue("id")
 	if id == "" {
 		w.Header().Set("Content-Type", "application/json")

@@ -1,8 +1,24 @@
 -- Ativa a extensão espacial do PostGIS (executar apenas uma vez por banco)
 CREATE EXTENSION IF NOT EXISTS postgis;
 
+-- 1. Criação do tipo ENUM no Postgres (Opcional, mas garante validação no banco)
+CREATE TYPE user_role AS ENUM ('admin', 'user');
+
+-- 2. Tabela de Utilizadores
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(36) PRIMARY KEY,               -- UUID v4
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,     -- Senha criptografada (ex: bcrypt)
+    roles user_role[] NOT NULL DEFAULT '{user}', -- Array com as roles do enum
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
 -- 1. AGENCY
-CREATE TABLE agency (
+CREATE TABLE IF NOT EXISTS agency (
     agency_id TEXT PRIMARY KEY,
     agency_name TEXT NOT NULL,
     agency_url TEXT NOT NULL,
@@ -13,7 +29,7 @@ CREATE TABLE agency (
 );
 
 -- 2. CALENDAR
-CREATE TABLE calendar (
+CREATE TABLE IF NOT EXISTS calendar (
     service_id TEXT PRIMARY KEY,
     monday INT NOT NULL,
     tuesday INT NOT NULL,
@@ -27,7 +43,7 @@ CREATE TABLE calendar (
 );
 
 -- 3. CALENDAR_DATES
-CREATE TABLE calendar_dates (
+CREATE TABLE IF NOT EXISTS calendar_dates (
     service_id TEXT NOT NULL,
     date DATE NOT NULL,
     exception_type INT NOT NULL, -- 1 = adicionado, 2 = removido
@@ -35,7 +51,7 @@ CREATE TABLE calendar_dates (
 );
 
 -- 4. FARE_ATTRIBUTES
-CREATE TABLE fare_attributes (
+CREATE TABLE IF NOT EXISTS fare_attributes (
     fare_id TEXT PRIMARY KEY,
     price NUMERIC(10, 2) NOT NULL,
     currency_type TEXT NOT NULL,
@@ -46,7 +62,7 @@ CREATE TABLE fare_attributes (
 
 
 -- 6. SHAPES
-CREATE TABLE shapes (
+CREATE TABLE IF NOT EXISTS shapes (
     shape_id TEXT NOT NULL,
     shape_pt_lat DOUBLE PRECISION NOT NULL,
     shape_pt_lon DOUBLE PRECISION NOT NULL,
@@ -55,7 +71,7 @@ CREATE TABLE shapes (
 );
 
 -- 7. ROUTES
-CREATE TABLE routes (
+CREATE TABLE IF NOT EXISTS routes (
     route_id TEXT PRIMARY KEY,
     agency_id TEXT REFERENCES agency(agency_id) ON DELETE SET NULL,
     route_short_name TEXT,
@@ -68,7 +84,7 @@ CREATE TABLE routes (
 );
 
 -- 8. TRIPS
-CREATE TABLE trips (
+CREATE TABLE IF NOT EXISTS trips (
     route_id TEXT NOT NULL REFERENCES routes(route_id) ON DELETE CASCADE,
     service_id TEXT NOT NULL,
     trip_id TEXT PRIMARY KEY,
@@ -81,7 +97,7 @@ CREATE TABLE trips (
 );
 
 -- 9. STOPS
-CREATE TABLE stops (
+CREATE TABLE IF NOT EXISTS stops (
     stop_id TEXT PRIMARY KEY,
     stop_code TEXT,
     stop_name TEXT NOT NULL,
@@ -91,7 +107,7 @@ CREATE TABLE stops (
 );
 
 -- 10. STOP_TIMES
-CREATE TABLE stop_times (
+CREATE TABLE IF NOT EXISTS stop_times (
     trip_id TEXT NOT NULL REFERENCES trips(trip_id) ON DELETE CASCADE,
     arrival_time INTERVAL, -- Ex: '08:30:00' (INTERVAL acomoda horários > 24h comuns no GTFS)
     departure_time INTERVAL,

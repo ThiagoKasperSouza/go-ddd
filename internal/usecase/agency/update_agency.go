@@ -58,11 +58,3 @@ func (uc *UpdateAgencyUseCase) Execute(ctx context.Context, id string, input dto
 		AgencyFareURL:  &fareURL,
 	}, nil
 }
-
-// Função auxiliar (pode reaproveitar do create_agency.go se estiver no mesmo pacote)
-func derefString(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}

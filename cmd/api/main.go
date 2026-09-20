@@ -12,8 +12,12 @@ import (
 	"github.com/joho/godotenv"
 
 	"go-ddd/internal/infra/db/postgres"
-	usecaseAgency "go-ddd/internal/usecase/agency"
+	domainIdentity "go-ddd/internal/domain/identity"
 	handlerAgency "go-ddd/internal/infra/http/handler/agency"
+	handlerAuth "go-ddd/internal/infra/http/handler/auth" // Alias correto para o handler de auth
+	"go-ddd/internal/infra/http/middleware"
+	usecaseAgency "go-ddd/internal/usecase/agency"
+	usecaseIdentity "go-ddd/internal/usecase/identity"
 )
 
 // Função auxiliar para ler variáveis de ambiente com fallback padrão
@@ -61,9 +65,19 @@ func injectAgency(db *sql.DB) *handlerAgency.AgencyHandler {
 		getAgencyUseCase,
 		listAgenciesUseCase,
 		updateAgencyUseCase,
-		deleteAgencyUseCase
+		deleteAgencyUseCase,
 	)
 
+}
+
+func injectLogin(db *sql.DB) *handlerAuth.AuthHandler{
+	userRepo := postgres.NewUserRepository(db)
+
+	// 2. Inicializa Serviços de Domínio
+	passwordHasher := domainIdentity.NewBcryptHasher()
+	createUserUseCase := usecaseIdentity.NewCreateUserUseCase(userRepo, passwordHasher)
+	loginUseCase := usecaseIdentity.NewLoginUseCase(userRepo, passwordHasher)
+	return handlerAuth.NewAuthHandler(loginUseCase, createUserUseCase)
 }
 
 func main() {
@@ -78,15 +92,36 @@ func main() {
 		fmt.Println("Erro ao configurar banco: ",err)
 	}
 	agencyHandler := injectAgency(db)
+	authHandler := injectLogin(db)
 	// 3. Configuração de Rotas com o ServeMux Nativo (Go 1.22+)
 	mux := http.NewServeMux()
 
 	// O Go 1.22+ aceita métodos HTTP e parâmetros entre chaves {id} nativamente
-	mux.HandleFunc("POST /agencies", agencyHandler.Create)
+	mux.HandleFunc("POST /login", authHandler.Login)
+	mux.HandleFunc("POST /users", authHandler.Register)
+	mux.Handle("POST /agencies", 
+		middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleAdmin)(
+				http.HandlerFunc(agencyHandler.Create),
+			),
+		),
+	)
 	mux.HandleFunc("GET /agencies", agencyHandler.ListAll)
 	mux.HandleFunc("GET /agencies/{id}", agencyHandler.GetByID)
-	mux.HandleFunc("PUT /agencies/{id}", agencyHandler.Update)
-	mux.HandleFunc("DELETE /agencies/{id}", agencyHandler.Delete)
+	mux.Handle("PUT /agencies/{id}", 
+	middleware.EnsureAuthenticated(
+		middleware.RequireRole(domainIdentity.RoleAdmin)(
+			http.HandlerFunc(agencyHandler.Update),
+			),
+		),
+	)
+	mux.Handle("DELETE /agencies/{id}", 
+	middleware.EnsureAuthenticated(
+		middleware.RequireRole(domainIdentity.RoleAdmin)(
+			http.HandlerFunc(agencyHandler.Delete),
+		),
+	),
+)
 
 	// 4. Inicialização do Servidor HTTP
 	port := getEnv("PORT", "8080")
