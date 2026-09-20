@@ -1,0 +1,3 @@
+CREATE DATABASE gtfs_db;
+\c gtfs_db
+CREATE EXTENSION IF NOT EXISTS postgis;
