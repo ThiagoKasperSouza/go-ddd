@@ -3,7 +3,6 @@ package dto
 import "time"
 
 type CreateUserDTO struct {
-	ID       string   `json:"id"`
 	Name     string   `json:"name"`
 	Email    string   `json:"email"`
 	Password string   `json:"password"` // Senha em texto puro no request

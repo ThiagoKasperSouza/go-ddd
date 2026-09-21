@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
+
 	domainIdentity "go-ddd/internal/domain/identity"
 	"go-ddd/internal/dto"
 )
@@ -52,9 +54,10 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context, input dto.CreateUserDT
 		}
 	}
 
+	newID := uuid.New().String()
 	// 5. Cria a Entidade de Usuário contendo o HASH
 	user, err := domainIdentity.NewUser(
-		input.ID,
+		newID,
 		input.Name,
 		input.Email,
 		hashedPassword,
