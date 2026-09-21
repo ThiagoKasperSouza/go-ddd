@@ -7,5 +7,6 @@
 <br>
 <img width="1000"  alt="agency" src="https://github.com/user-attachments/assets/b06a2ac4-fa4c-4a15-9cd1-916c3f5792dc" />
 
-
+Refs:
+https://medium.com/@tomascdmota/the-difference-between-a-dto-an-entity-and-a-model-6f7265b395c9
 
