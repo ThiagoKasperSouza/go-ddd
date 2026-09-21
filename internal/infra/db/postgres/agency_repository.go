@@ -53,7 +53,7 @@ func (r *AgencyRepository) FindByID(ctx context.Context, id string) (*domainAgen
 	query := `
 		SELECT agency_id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url
 		FROM agency
-		WHERE id = $1
+		WHERE agency_id = $1
 	`
 
 	row := r.db.QueryRowContext(ctx, query, id)

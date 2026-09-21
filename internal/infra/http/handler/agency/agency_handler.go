@@ -48,6 +48,8 @@ func (h *AgencyHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println(id)
+
 	output, err := h.getAgencyUseCase.Execute(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, domainAgency.ErrAgencyNotFound) {
@@ -56,6 +58,7 @@ func (h *AgencyHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(map[string]string{"error": "agency not found"})
 			return
 		}
+		log.Printf("Erro no GetById UseCase: %v\n", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
