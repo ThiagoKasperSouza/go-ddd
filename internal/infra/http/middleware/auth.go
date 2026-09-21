@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"net"
+	"time"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,6 +23,33 @@ type UserClaims struct {
 	UserID string          `json:"user_id"`
 	Roles  []identity.Role `json:"roles"`
 }
+
+
+// statusWriter captura status e bytes, pois o middleware só sabe
+// o resultado DEPOIS que o handler responde.
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+	bytes  int
+}
+ 
+func (w *statusWriter) WriteHeader(code int) {
+	w.status = code
+	w.ResponseWriter.WriteHeader(code)
+}
+ 
+func (w *statusWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.status = http.StatusOK
+	}
+	n, err := w.ResponseWriter.Write(b)
+	w.bytes += n
+	return n, err
+}
+ 
+// Unwrap mantém Flusher/Hijacker funcionando via http.ResponseController.
+func (w *statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
 
 func (c *UserClaims) HasRole(role identity.Role) bool {
 	if c == nil {
@@ -37,6 +66,7 @@ func (c *UserClaims) HasRole(role identity.Role) bool {
 // EnsureAuthenticated valida o token JWT enviado no Header Authorization
 func EnsureAuthenticated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			respondWithError(w, http.StatusUnauthorized, "authorization header missing")
@@ -52,7 +82,7 @@ func EnsureAuthenticated(next http.Handler) http.Handler {
 		tokenString := parts[1]
 
 		// Valida o Token JWT
-		claims, err := validateJWT(tokenString)
+		claims, err := validateJWT(w, r, tokenString)
 		if err != nil {
 			respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
 			return
@@ -65,7 +95,7 @@ func EnsureAuthenticated(next http.Handler) http.Handler {
 }
 
 // validateJWT lê e verifica a assinatura e expiração do JWT
-func validateJWT(tokenString string) (*UserClaims, error) {
+func validateJWT(w http.ResponseWriter, r *http.Request, tokenString string) (*UserClaims, error) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	if len(jwtSecret) == 0 {
 		// Fallback para desenvolvimento caso a variável de ambiente não esteja configurada
@@ -96,6 +126,32 @@ func validateJWT(tokenString string) (*UserClaims, error) {
 		// Caso a chave utilizada seja 'user_id' em vez do padrão 'sub'
 		userID, _ = mapClaims["user_id"].(string)
 	}
+	start := time.Now()
+	pub := NewPublisher([]string{"localhost:9094"}, "api.events")
+
+	sw := &statusWriter{ResponseWriter: w}
+
+	path := r.Pattern
+	if path == "" {
+		path = r.URL.Path
+	}
+
+	ip, _, splitErr := net.SplitHostPort(r.RemoteAddr)
+	if splitErr != nil {
+		ip = r.RemoteAddr
+	}
+
+	pub.Publish(Event{
+			Timestamp:  start.UTC(),
+			Method:     r.Method,
+			Path:       path,
+			Status:     sw.status,
+			DurationMs: float64(time.Since(start).Microseconds()) / 1000,
+			UserID:     userID,
+			IP:         ip,
+			BytesOut:   sw.bytes,
+	})
+
 
 	// Processa o array de roles vindos do payload JWT
 	var userRoles []identity.Role
