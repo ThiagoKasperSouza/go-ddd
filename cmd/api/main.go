@@ -14,10 +14,12 @@ import (
 	"go-ddd/internal/infra/db/postgres"
 	domainIdentity "go-ddd/internal/domain/identity"
 	handlerAgency "go-ddd/internal/infra/http/handler/agency"
-	handlerAuth "go-ddd/internal/infra/http/handler/auth" // Alias correto para o handler de auth
+	handlerAuth "go-ddd/internal/infra/http/handler/auth"
+	handlerRoutes "go-ddd/internal/infra/http/handler/routes"
 	"go-ddd/internal/infra/http/middleware"
 	usecaseAgency "go-ddd/internal/usecase/agency"
 	usecaseIdentity "go-ddd/internal/usecase/identity"
+	usecaseRoutes "go-ddd/internal/usecase/routes"
 )
 
 // Função auxiliar para ler variáveis de ambiente com fallback padrão
@@ -80,6 +82,15 @@ func injectLogin(db *sql.DB) *handlerAuth.AuthHandler{
 	return handlerAuth.NewAuthHandler(loginUseCase, createUserUseCase)
 }
 
+func injectRoutes(db *sql.DB) *handlerRoutes.RouteHandler{
+	routesRepo := postgres.NewRouteRepository(db)
+
+	// 2. Inicializa Serviços de Domínio
+	getRouteUseCase := usecaseRoutes.NewGetRouteUseCase(routesRepo)
+	listRoutesUseCase := usecaseRoutes.NewListRoutesUseCase(routesRepo)
+	return handlerRoutes.NewRouteHandler(getRouteUseCase, listRoutesUseCase)
+}
+
 func main() {
 	// 1. Carrega o arquivo .env
 	// Se o arquivo .env não existir (ex: no ambiente de produção/Docker), ele ignora o erro
@@ -91,14 +102,28 @@ func main() {
 	if err != nil {
 		fmt.Println("Erro ao configurar banco: ",err)
 	}
+
 	agencyHandler := injectAgency(db)
 	authHandler := injectLogin(db)
+	routesHandler := injectRoutes(db)
 	// 3. Configuração de Rotas com o ServeMux Nativo (Go 1.22+)
 	mux := http.NewServeMux()
 
 	// O Go 1.22+ aceita métodos HTTP e parâmetros entre chaves {id} nativamente
 	mux.HandleFunc("POST /login", authHandler.Login)
 	mux.HandleFunc("POST /users", authHandler.Register)
+	mux.Handle("GET /routes", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(routesHandler.ListAll),
+			),
+		),
+	)
+	mux.Handle("GET /routes/{id}", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(routesHandler.GetByID),
+			),
+		),
+	)
 	mux.Handle("POST /agencies", 
 		middleware.EnsureAuthenticated(
 			middleware.RequireRole(domainIdentity.RoleAdmin)(
@@ -106,8 +131,18 @@ func main() {
 			),
 		),
 	)
-	mux.HandleFunc("GET /agencies", agencyHandler.ListAll)
-	mux.HandleFunc("GET /agencies/{id}", agencyHandler.GetByID)
+	mux.Handle("GET /agencies", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(agencyHandler.ListAll),
+			),
+		),
+	)
+	mux.Handle("GET /agencies/{id}", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(agencyHandler.GetByID),
+			),
+		),
+	)
 	mux.Handle("PUT /agencies/{id}", 
 	middleware.EnsureAuthenticated(
 		middleware.RequireRole(domainIdentity.RoleAdmin)(
