@@ -16,10 +16,12 @@ import (
 	handlerAgency "go-ddd/internal/infra/http/handler/agency"
 	handlerAuth "go-ddd/internal/infra/http/handler/auth"
 	handlerRoutes "go-ddd/internal/infra/http/handler/routes"
+	handlerShapes "go-ddd/internal/infra/http/handler/shapes"
 	"go-ddd/internal/infra/http/middleware"
 	usecaseAgency "go-ddd/internal/usecase/agency"
 	usecaseIdentity "go-ddd/internal/usecase/identity"
 	usecaseRoutes "go-ddd/internal/usecase/routes"
+	usecaseShapes "go-ddd/internal/usecase/shapes"
 )
 
 // Função auxiliar para ler variáveis de ambiente com fallback padrão
@@ -91,6 +93,15 @@ func injectRoutes(db *sql.DB) *handlerRoutes.RouteHandler{
 	return handlerRoutes.NewRouteHandler(getRouteUseCase, listRoutesUseCase)
 }
 
+func injectShapes(db *sql.DB) *handlerShapes.ShapeHandler{
+	shapesRepo := postgres.NewShapeRepository(db)
+
+	// 2. Inicializa Serviços de Domínio
+	getShapeUseCase := usecaseShapes.NewGetShapeUseCase(shapesRepo)
+	listShapesUseCase := usecaseShapes.NewListShapesUseCase(shapesRepo)
+	return handlerShapes.NewShapeHandler(getShapeUseCase, listShapesUseCase)
+}
+
 func main() {
 	// 1. Carrega o arquivo .env
 	// Se o arquivo .env não existir (ex: no ambiente de produção/Docker), ele ignora o erro
@@ -106,12 +117,25 @@ func main() {
 	agencyHandler := injectAgency(db)
 	authHandler := injectLogin(db)
 	routesHandler := injectRoutes(db)
+	shapesHandler := injectShapes(db)
 	// 3. Configuração de Rotas com o ServeMux Nativo (Go 1.22+)
 	mux := http.NewServeMux()
 
 	// O Go 1.22+ aceita métodos HTTP e parâmetros entre chaves {id} nativamente
 	mux.HandleFunc("POST /login", authHandler.Login)
 	mux.HandleFunc("POST /users", authHandler.Register)
+	mux.Handle("GET /shapes", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(shapesHandler.ListAll),
+			),
+		),
+	)
+	mux.Handle("GET /shapes/{id}", middleware.EnsureAuthenticated(
+			middleware.RequireRole(domainIdentity.RoleUser)(
+				http.HandlerFunc(shapesHandler.GetByID),
+			),
+		),
+	)
 	mux.Handle("GET /routes", middleware.EnsureAuthenticated(
 			middleware.RequireRole(domainIdentity.RoleUser)(
 				http.HandlerFunc(routesHandler.ListAll),

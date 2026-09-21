@@ -27,16 +27,17 @@ func NewRouteRepository(db *sql.DB) *RouteRepository {
 func (r *RouteRepository) FindByID(ctx context.Context, id string) (*domainRoute.Route, error) {
 	query := `
 		SELECT 
+		route_id,
 		agency_id,
 		route_short_name,
 		route_long_name,
-		route_desc,
+		COALESCE(route_desc, '') AS route_desc,
 		route_type,
 		route_url,
 		route_color,
 		route_text_color
 		FROM routes
-		WHERE id = $1
+		WHERE route_id = $1
 	`
 
 	row := r.db.QueryRowContext(ctx, query, id)
@@ -58,7 +59,7 @@ func (r *RouteRepository) FindByID(ctx context.Context, id string) (*domainRoute
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domainRoute.ErrRouteNotFound // Mapeia erro de infraestrutura para erro de domínio
 		}
-		return nil, fmt.Errorf("failed to find agency by id: %w", err)
+		return nil, fmt.Errorf("failed to find route by id: %w", err)
 	}
 
 	return domainRoute.RestoreRoute(routeId,agencyId,routeShortName,routeLongName, routeDesc, routeType, routeURL, routeColor, routeTextColor), nil
