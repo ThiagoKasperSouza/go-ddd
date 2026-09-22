@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	
 	domainShape "go-ddd/internal/domain/shapes" // substitua pelo caminho correto do seu módulo
@@ -24,35 +23,47 @@ func NewShapeRepository(db *sql.DB) *ShapeRepository {
 }
 
 // FindByID busca uma agência pelo seu ID
-func (r *ShapeRepository) FindByID(ctx context.Context, id string) (*domainShape.Shape, error) {
-	query := `
-		SELECT 
-		shape_id,
-		shape_pt_lat,
-		shape_pt_lon,
-		shape_pt_sequence
-		FROM shapes
-		WHERE shape_id = $1
-	`
+func (r *ShapeRepository) FindByID(ctx context.Context, id string) ([]*domainShape.Shape, error) {
+    query := `
+        SELECT 
+            shape_id,
+            shape_pt_lat,
+            shape_pt_lon,
+            shape_pt_sequence
+        FROM shapes
+        WHERE shape_id = $1 
+        ORDER BY CAST(shape_pt_sequence AS INTEGER) ASC;
+    `
 
-	row := r.db.QueryRowContext(ctx, query, id)
+    // ✅ CORREÇÃO: Adicionada a variável 'id' no final da chamada
+    rows, err := r.db.QueryContext(ctx, query, id)
+    if err != nil {
+        return nil, fmt.Errorf("failed to query Shapes: %w", err)
+    }
+    defer rows.Close()
 
-	var (
-		ShapeID       		string 
-		ShapePtLat       	string 
-		ShapePtLon     		string 
-		ShapePtSequence		string
-	)
+    var Shapes []*domainShape.Shape
 
-	err := row.Scan(&ShapeID,&ShapePtLat, &ShapePtLon, &ShapePtSequence)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domainShape.ErrShapeNotFound // Mapeia erro de infraestrutura para erro de domínio
-		}
-		return nil, fmt.Errorf("failed to find shape by id: %w", err)
-	}
+    for rows.Next() {
+        var (
+            ShapeID         string 
+            ShapePtLat      string 
+            ShapePtLon      string 
+            ShapePtSequence string
+        )
 
-	return domainShape.RestoreShape(ShapeID,ShapePtLat, ShapePtLon, ShapePtSequence), nil
+        if err := rows.Scan(&ShapeID, &ShapePtLat, &ShapePtLon, &ShapePtSequence); err != nil {
+            return nil, fmt.Errorf("failed to scan Shapes row: %w", err)
+        }
+
+        Shapes = append(Shapes, domainShape.RestoreShape(ShapeID, ShapePtLat, ShapePtLon, ShapePtSequence))
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error during Shape iteration: %w", err)
+    }
+
+    return Shapes, nil
 }
 
 // FindAll retorna todas as agências cadastradas

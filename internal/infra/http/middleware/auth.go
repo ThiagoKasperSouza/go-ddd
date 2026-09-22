@@ -9,7 +9,6 @@ import (
 	"os"
 	"net"
 	"time"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go-ddd/internal/domain/identity"

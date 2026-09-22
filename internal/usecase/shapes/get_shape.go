@@ -17,16 +17,25 @@ func NewGetShapeUseCase(shapeRepo domainShape.ShapeRepository) *GetShapeUseCase 
 	}
 }
 
-func (uc *GetShapeUseCase) Execute(ctx context.Context, id string) (*dto.ShapeDTO, error) {
-	shape,err := uc.shapeRepo.FindByID(ctx,id);
+func (uc *GetShapeUseCase) Execute(ctx context.Context, id string) (*dto.ListShapesOutputDTO, error) {
+	shapes,err := uc.shapeRepo.FindByID(ctx,id)
 	if err != nil {
-		return nil,err // domain.ErrShapeNotFound
+		return nil, err
 	}
 
-	return &dto.ShapeDTO{
+	//transformacao em lista
+	var outputShapes []dto.ShapeDTO
+	for _,shape := range shapes {
+
+
+		outputShapes = append(outputShapes,dto.ShapeDTO{
 		ShapeID: shape.ID(),      			
 		ShapePtLat: shape.ShapePtLat(),
 		ShapePtLon: shape.ShapePtLon(),
 		ShapePtSequence: shape.ShapePtSequence(),
-		}, nil
+		})
+	}
+	return &dto.ListShapesOutputDTO{
+		Shapes: outputShapes,
+	},nil
 }
