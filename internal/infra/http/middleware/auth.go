@@ -18,6 +18,7 @@ import (
 type contextKey string
 
 const UserContextKey contextKey = "user"
+const AuthCookieName = "auth_token"
 
 type UserClaims struct {
 	UserID string          `json:"user_id"`
@@ -63,37 +64,35 @@ func (c *UserClaims) HasRole(role identity.Role) bool {
 	return false
 }
 
-// EnsureAuthenticated valida o token JWT enviado no Header Authorization
+// EnsureAuthenticated valida o token JWT enviado no Cookie HttpOnly
 func EnsureAuthenticated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			respondWithError(w, http.StatusUnauthorized, "authorization header missing")
+		// 1. Tenta extrair o cookie da requisição
+		cookie, err := r.Cookie(AuthCookieName)
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, "authentication cookie missing")
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			respondWithError(w, http.StatusUnauthorized, "invalid authorization format")
+		tokenString := cookie.Value
+		if tokenString == "" {
+			respondWithError(w, http.StatusUnauthorized, "empty authentication token")
 			return
 		}
 
-		tokenString := parts[1]
-
-		// Valida o Token JWT
+		// 2. Valida o Token JWT
 		claims, err := validateJWT(w, r, tokenString)
 		if err != nil {
 			respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
 			return
 		}
 
-		// Adiciona o UserClaims no Contexto da Requisição
+		// 3. Adiciona o UserClaims no Contexto da Requisição
 		ctx := context.WithValue(r.Context(), UserContextKey, claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
 // validateJWT lê e verifica a assinatura e expiração do JWT
 func validateJWT(w http.ResponseWriter, r *http.Request, tokenString string) (*UserClaims, error) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
