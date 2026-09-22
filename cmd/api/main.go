@@ -137,6 +137,7 @@ func main() {
 
 	// O Go 1.22+ aceita métodos HTTP e parâmetros entre chaves {id} nativamente
 	mux.HandleFunc("POST /login", authHandler.Login)
+	mux.HandleFunc("POST /logout", authHandler.Logout)
 	mux.HandleFunc("POST /users", authHandler.Register)
 	mux.Handle("GET /trips", middleware.EnsureAuthenticated(
 			middleware.RequireRole(domainIdentity.RoleUser)(

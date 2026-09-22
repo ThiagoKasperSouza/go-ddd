@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	usecaseIdentity "go-ddd/internal/usecase/identity"
 	domainIdentity "go-ddd/internal/domain/identity"
@@ -48,10 +49,21 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "internal server error"})
 		return
 	}
+	http.SetCookie(w, &http.Cookie{
+        Name:     "auth_token",
+        Value:    output.AccessToken,
+        Path:     "/",
+        HttpOnly: true,
+        Secure:   false, // permite http
+        SameSite: http.SameSiteLaxMode,
+        Expires:  time.Now().Add(8 * time.Hour),
+    })
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(output)
+	json.NewEncoder(w).Encode(map[string]string{
+        "message": "login realizado com sucesso",
+    })
 }
 
 // Register lida com POST /register
@@ -92,4 +104,17 @@ func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(payload)
+}
+
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+    http.SetCookie(w, &http.Cookie{
+        Name:     "auth_token",
+        Value:    "",
+        Path:     "/",
+        HttpOnly: true,
+        Expires:  time.Unix(0, 0), // Expira imediatamente
+        MaxAge:   -1,
+    })
+    
+    w.WriteHeader(http.StatusOK)
 }
