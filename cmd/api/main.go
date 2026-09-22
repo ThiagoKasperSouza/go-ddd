@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 
 	"go-ddd/internal/infra/db/postgres"
 	"go-ddd/internal/infra/http/middleware"
@@ -211,8 +212,19 @@ func main() {
 	port := getEnv("PORT", "8080")
 	serverAddr := fmt.Sprintf(":%s", port)
 
+	// Configuração do CORS
+    c := cors.New(cors.Options{
+        AllowedOrigins:   []string{"http://localhost:5173"}, // Origem do teu frontend
+        AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+        AllowedHeaders:   []string{"Content-Type", "Authorization"},
+        AllowCredentials: true,
+    })
+
+    // Envolver o roteador (mux) com o middleware de CORS
+    handler := c.Handler(mux)
+
 	log.Printf("Servidor rodando na porta %s...", port)
-	if err := http.ListenAndServe(serverAddr, mux); err != nil {
+	if err := http.ListenAndServe(serverAddr, handler); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 
