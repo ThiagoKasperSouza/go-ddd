@@ -1,0 +1,311 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: go-ddd
+meta:
+  id: wrk_0f8833c3a4474990bf12c28a49643f56
+  created: 1790004309222
+  modified: 1790004309222
+  description: ""
+collection:
+  - name: auth
+    meta:
+      id: fld_868724698e574895b7c1b3861d0ac87c
+      created: 1790004330708
+      modified: 1790004330708
+      sortKey: -1790004330708
+      description: ""
+    children:
+      - url: http://localhost:8080/users
+        name: register
+        meta:
+          id: req_5eff7cc4b5d9455c8766abaae4b0f9b8
+          created: 1790004336920
+          modified: 1790005393225
+          isPrivate: false
+          description: ""
+          sortKey: -1790004336921
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Thiago Kasper de Souza",
+            	"email": "thiagokaspersouza@gmail.com",
+            	"password": "dev123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/login
+        name: login
+        meta:
+          id: req_b9b6223d308145baa6de317fd0422a06
+          created: 1790005398267
+          modified: 1790005462192
+          isPrivate: false
+          description: ""
+          sortKey: -1790005398267
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"email": "thiagokaspersouza@gmail.com",
+            	"password": "dev123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: agency
+    meta:
+      id: fld_74ed8ae471dc4607ac1b629a2385cd3e
+      created: 1790005494474
+      modified: 1790005494474
+      sortKey: -1790005494474
+      description: ""
+    children:
+      - url: http://localhost:8080/agencies
+        name: List
+        meta:
+          id: req_9b37a4fcca494530949f6be456d7d3ba
+          created: 1790005500863
+          modified: 1790005769699
+          isPrivate: false
+          description: ""
+          sortKey: -1790005500863
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/agencies/EPTC
+        name: GetById
+        meta:
+          id: req_6ab9b0aa8ecd441ba47f8148c20f6cd1
+          created: 1790005597188
+          modified: 1790018242511
+          isPrivate: false
+          description: ""
+          sortKey: -1790005597188
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: routes
+    meta:
+      id: fld_fbb7c1bfbdcd4df7a07600cb03df2069
+      created: 1790005719086
+      modified: 1790024918165
+      sortKey: -1790005719086
+      description: ""
+    children:
+      - url: http://localhost:8080/routes
+        name: List
+        meta:
+          id: req_fe7898f8f8cc4c73921bdb9192376dac
+          created: 1790005724028
+          modified: 1790023893718
+          isPrivate: false
+          description: ""
+          sortKey: -1790005724028
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/routes/1112
+        name: GetById
+        meta:
+          id: req_8446c8f490e9464191d6261fb690cc7b
+          created: 1790019010925
+          modified: 1790019065984
+          isPrivate: false
+          description: ""
+          sortKey: -1790019010925
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: shapes
+    meta:
+      id: fld_2fa3bed4860a44b0b19269cd4290f869
+      created: 1790021559301
+      modified: 1790021559301
+      sortKey: -1790021559301
+      description: ""
+    children:
+      - url: http://localhost:8080/shapes
+        name: List
+        meta:
+          id: req_bd69db85971b43f5a53879c8530e0159
+          created: 1790021570000
+          modified: 1790036578792
+          isPrivate: false
+          description: ""
+          sortKey: -1790021570000
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/shapes/T11-2
+        name: GetById
+        meta:
+          id: req_05f0404bc9de4fa596ab058839846c1a
+          created: 1790021596976
+          modified: 1790024018861
+          isPrivate: false
+          description: ""
+          sortKey: -1790021596976
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: trips
+    meta:
+      id: fld_4df996f774664ff495e289fd32763eb8
+      created: 1790034372707
+      modified: 1790034372707
+      sortKey: -1790034372707
+      description: ""
+    children:
+      - url: http://localhost:8080/trips
+        name: List
+        meta:
+          id: req_ab55a35080a644f4bb60e9f3a122018d
+          created: 1790034375697
+          modified: 1790036584998
+          isPrivate: false
+          description: ""
+          sortKey: -1790034375697
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/trips/255-1@2%23830
+        name: GetById
+        meta:
+          id: req_bf365a9de3724ef2b887ac79b82ef2cd
+          created: 1790034397587
+          modified: 1790037103410
+          isPrivate: false
+          description: ""
+          sortKey: -1790034397587
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAwOTE4NjQsImlhdCI6MTc5MDAwNTQ2NCwicm9sZXMiOlsidXNlciJdLCJzdWIiOiJhZjViODYwMi0yMzAyLTQ1YTItYWE0MS1hNWM5OTBiNDNhNTUifQ.R-fu7UIaTIvUBnLTaJpdSD_6hPfbUb_iVs3SaosE7Us
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_0ff5f32bfe2d52b636dd26b7c4a4869d8c06957d
+    created: 1790004309224
+    modified: 1790004309224
+environments:
+  name: Base Environment
+  meta:
+    id: env_0ff5f32bfe2d52b636dd26b7c4a4869d8c06957d
+    created: 1790004309223
+    modified: 1790004309223
+    isPrivate: false
