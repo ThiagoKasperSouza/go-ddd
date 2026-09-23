@@ -9,7 +9,100 @@ API desenvolvida em **Go** seguindo os princípios de **Domain-Driven Design (DD
 - **Kafka, Prometheus e Grafana** Observabilidade
 
 ## 📁 Estrutura do Projeto:
-<img width="270" height="421" alt="image"  src="https://github.com/user-attachments/assets/326630d3-0ee6-4497-88f4-6bea28fe693c" />
+```Markdown
+├── Go-ddd-Insomnia
+├── README.md
+├── cmd
+│   ├── api
+│   │   └── main.go
+│   └── consumer
+│       └── main.go
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+├── grafana
+│   └── provisioning
+│       └── datasources
+│           └── prometheus-datasource.yml
+├── internal
+│   ├── domain
+│   │   ├── agency
+│   │   │   ├── agency.go
+│   │   │   └── repo.go
+│   │   ├── identity
+│   │   │   ├── jwt_tok.go
+│   │   │   ├── password_hasher.go
+│   │   │   ├── role.go
+│   │   │   ├── user.go
+│   │   │   └── user_repository.go
+│   │   ├── routes
+│   │   │   ├── repo.go
+│   │   │   └── routes.go
+│   │   ├── shapes
+│   │   │   ├── repo.go
+│   │   │   └── shapes.go
+│   │   └── trips
+│   │       ├── repo.go
+│   │       └── trips.go
+│   ├── dto
+│   │   ├── agencyDTO.go
+│   │   ├── auth.go
+│   │   ├── routesDTO.go
+│   │   ├── shapesDTO.go
+│   │   ├── tripsDTO.go
+│   │   └── userDTO.go
+│   ├── infra
+│   │   ├── db
+│   │   │   └── postgres
+│   │   │       ├── agency_repository.go
+│   │   │       ├── route_repository.go
+│   │   │       ├── shape_repository.go
+│   │   │       ├── trip_repository.go
+│   │   │       └── user_repository.go
+│   │   └── http
+│   │       ├── handler
+│   │       │   ├── agency
+│   │       │   │   └── agency_handler.go
+│   │       │   ├── auth
+│   │       │   │   └── auth_handler.go
+│   │       │   ├── routes
+│   │       │   │   └── routes_handler.go
+│   │       │   ├── shapes
+│   │       │   │   └── shapes_handler.go
+│   │       │   └── trips
+│   │       │       └── trips_handler.go
+│   │       └── middleware
+│   │           ├── auth.go
+│   │           └── publisher.go
+│   └── usecase
+│       ├── agency
+│       │   ├── create_agency.go
+│       │   ├── delete_agency.go
+│       │   ├── get_agency.go
+│       │   ├── list_agencies.go
+│       │   └── update_agency.go
+│       ├── identity
+│       │   ├── create_user.go
+│       │   └── login.go
+│       ├── routes
+│       │   ├── get_route.go
+│       │   └── list_routes.go
+│       ├── shapes
+│       │   ├── get_shape.go
+│       │   └── list_shapes.go
+│       └── trips
+│           ├── get_trip.go
+│           └── list_trips.go
+├── prometheus
+│   └── prometheus.yml
+└── sql
+    ├── copy_files.sql
+    ├── create_db.sql
+    ├── create_index.sql
+    ├── create_tables.sql
+    └── files
+        └── README.md
+```
 <br>
 
 ## Diagrama Agency:
