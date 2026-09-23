@@ -23,6 +23,9 @@ API desenvolvida em **Go** seguindo os princípios de **Domain-Driven Design (DD
 ## Diagrama Trips:
 <img width="1000" alt="trips" src="https://github.com/user-attachments/assets/45f9f43e-d0d4-469f-8d28-54bb754fbd8c" />
 
+## Diagrama Shapes:
+<img width="1000" alt="shapes" src="https://github.com/user-attachments/assets/eb275a15-3ba2-46cb-91c6-c04425731c92" />
+
 
 🏗️ Camadas da Arquitetura
 Domain (internal/domain): Contém o coração da aplicação. As regras de negócio fundamentais e as interfaces de repositórios estão concentradas aqui, sem dependências externas.
