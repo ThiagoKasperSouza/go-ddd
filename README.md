@@ -120,7 +120,8 @@ API desenvolvida em **Go** seguindo os princípios de **Domain-Driven Design (DD
 <img width="1000" alt="shapes" src="https://github.com/user-attachments/assets/eb275a15-3ba2-46cb-91c6-c04425731c92" />
 
 
-🏗️ Camadas da Arquitetura
+## 🏗️ Camadas da Arquitetura
+
 Domain (internal/domain): Contém o coração da aplicação. As regras de negócio fundamentais e as interfaces de repositórios estão concentradas aqui, sem dependências externas.
 
 Use Cases (internal/usecase): Implementa o fluxo das funcionalidades do sistema (CRUD de agências). Interage diretamente com as entidades do domínio.
@@ -131,11 +132,11 @@ Infrastructure (internal/infra): Contém os detalhes técnicos e integrações c
 
 Cmd (cmd/api): Ponto de entrada onde as dependências são injetadas e o servidor é inicializado.
 
-🚀 Como Executar o Projeto
+## 🚀 Como Executar o Projeto
 Pré-requisitos
-Go (v1.18+ recomendado)
-
-PostgreSQL rodando localmente ou via Docker
+- Go (v1.18+ recomendado)
+- Docker instalado
+- PostgreSQL rodando localmente ou via Docker
 
 1. Configurar o Banco de Dados
 Execute os scripts SQL presentes no diretório sql/ para criar o banco de dados e as tabelas necessárias:
